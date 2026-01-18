@@ -12,7 +12,6 @@ type Config struct {
 	Port string
 	MaxFileSize int64
 	APIKeys	map[string]bool
-	TokenSecret string
 }
 
 var Configuration *Config
@@ -35,16 +34,10 @@ func Load() error {
         return fmt.Errorf("no valid API keys found")
     }
 
-	tokenSecret := os.Getenv("TOKEN_SECRET")
-    if tokenSecret == "" {
-        return fmt.Errorf("TOKEN_SECRET not set in environment")
-    }
-
     Configuration = &Config{
         Port:            getEnv("PORT", "8888"),
         MaxFileSize:     maxFileSize,
         APIKeys:         apiKeys,
-        TokenSecret:     tokenSecret,
     }
 
     return nil
