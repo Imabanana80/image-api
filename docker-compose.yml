@@ -1,0 +1,15 @@
+name: imgapi
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./images:/app/images
+    env_file:
+      - ./.env
+    ports:
+      - "${PORT}:${PORT}"
+volumes:
+  images-data:
