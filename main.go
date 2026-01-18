@@ -145,6 +145,18 @@ func serveImageHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	split := strings.Split(filename, ".")
+	if (len(split) != 2) {
+        respondWithError(w, http.StatusBadRequest, "Invalid image path")
+		return
+	}
+
+	err := uuid.Validate(split[0])
+	if (err != nil) {
+        respondWithError(w, http.StatusBadRequest, "Invalid image path")
+		return;
+	}
+
     filepath := filepath.Join("./images", filename)
     if _, err := os.Stat(filepath); os.IsNotExist(err) {
         respondWithError(w, http.StatusNotFound, "Image not found")
