@@ -40,10 +40,12 @@ func main() {
     http.HandleFunc("/images/", serveImageHandler)
     http.HandleFunc("/ping", pingHandler)
 
+	handler := corsMiddleware(http.DefaultServeMux)
+
     log.Printf("Server starting on port %s", config.Configuration.Port)
     log.Fatal(http.ListenAndServe(
-        ":"+config.Configuration.Port, 
-        http.DefaultServeMux,
+        ":" + config.Configuration.Port, 
+        handler,
     ))
 }
 
@@ -65,6 +67,19 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
         next(w, r)
     }
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-API-Key")
+        if r.Method == http.MethodOptions {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        next.ServeHTTP(w, r)
+    })
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
