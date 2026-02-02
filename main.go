@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,6 +26,9 @@ type ErrorResponse struct {
     Error string `json:"error"`
 }
 
+//go:embed index.html
+var embeded embed.FS
+
 func main() {
     if err := config.Load(); err != nil {
         log.Fatal("Failed to load configuration:", err)
@@ -36,6 +40,7 @@ func main() {
         log.Fatal("Failed to create upload directory:", err)
     }
 
+    http.HandleFunc("/", indexHandler)
     http.HandleFunc("/new", authMiddleware(uploadHandler))
     http.HandleFunc("/images/", serveImageHandler)
     http.HandleFunc("/ping", pingHandler)
@@ -181,6 +186,17 @@ func serveImageHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Returned image " + filename)
 
     http.ServeFile(w, r, filepath)
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	file, err := embeded.ReadFile("index.html")
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "An error occurred", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(file)
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
